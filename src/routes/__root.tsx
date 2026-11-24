@@ -1,14 +1,14 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
-  Link,
   createRootRouteWithContext,
-  useRouter,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+
+import { WhatsAppAction } from "@/components/site/WhatsAppAction";
 
 import appCss from "../styles.css?url";
 
@@ -22,21 +22,15 @@ function NotFoundComponent() {
           O endereço pode ter mudado.
         </p>
         <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Voltar ao início
-          </Link>
+          <WhatsAppAction className="btn-whatsapp">Pedir ajuda no WhatsApp</WhatsAppAction>
         </div>
       </div>
     </div>
   );
 }
 
-function ErrorComponent({ error, reset }: ErrorComponentProps) {
+function ErrorComponent({ error }: ErrorComponentProps) {
   console.error(error);
-  const router = useRouter();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -45,24 +39,10 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           A página não carregou
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Tente atualizar a página ou volte ao início.
+          Fale com a Estetcar pelo WhatsApp para pedir atendimento.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Tentar novamente
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
+          <WhatsAppAction className="btn-whatsapp">Pedir ajuda no WhatsApp</WhatsAppAction>
         </div>
       </div>
     </div>

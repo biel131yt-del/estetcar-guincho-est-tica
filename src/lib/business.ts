@@ -10,7 +10,9 @@ export const BUSINESS = {
   lng: -51.6874006,
 };
 
-export function whatsappLink(message: string) {
+export const EMERGENCY_MESSAGE = "Olá, Estetcar! Preciso de socorro automotivo agora. Vou enviar minha localização.";
+
+export function whatsappLink(message = EMERGENCY_MESSAGE) {
   return `https://wa.me/${BUSINESS.phoneRaw}?text=${encodeURIComponent(message)}`;
 }
 
@@ -22,3 +24,4 @@ export const SERVICES = [
   { icon: "⛽", title: "Pane seca", text: "Ficou sem combustível? Levamos ajuda até você." },
   { icon: "🛣️", title: "Viagens e longas distâncias", text: "Transporte intermunicipal e interestadual com agendamento." },
 ];
+

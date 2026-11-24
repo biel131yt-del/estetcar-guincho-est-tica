@@ -1,3 +1,5 @@
+import { whatsappLink } from "./business.ts";
+
 export function renderErrorPage(): string {
   return `<!doctype html>
 <html lang="pt-BR">
@@ -11,18 +13,16 @@ export function renderErrorPage(): string {
       h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
       p { color: #4b5563; margin: 0 0 1.5rem; }
       .actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
-      a, button { padding: 0.5rem 1rem; border-radius: 0.375rem; font: inherit; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
+      a { padding: 0.5rem 1rem; border-radius: 0.375rem; font: inherit; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
       .primary { background: #111; color: #fff; }
-      .secondary { background: #fff; color: #111; border-color: #d1d5db; }
     </style>
   </head>
   <body>
     <div class="card">
       <h1>A página não carregou</h1>
-      <p>Tente atualizar a página ou volte ao início.</p>
+      <p>Fale com a Estetcar pelo WhatsApp para pedir atendimento.</p>
       <div class="actions">
-        <button class="primary" onclick="location.reload()">Tentar novamente</button>
-        <a class="secondary" href="/">Voltar ao início</a>
+        <a class="primary" href="${whatsappLink()}">Pedir ajuda no WhatsApp</a>
       </div>
     </div>
   </body>

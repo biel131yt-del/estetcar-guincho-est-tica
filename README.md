@@ -17,3 +17,7 @@ O primeiro login no modo de entrega exige uma nova senha antes de liberar a agen
 ## Gestão e frete
 
 Em `/admin`, abra **Empresa e tabela de frete** para cadastrar taxa de saída, tarifa por km e frete mínimo. No pedido, informe a distância cobrada e os adicionais e aplique o cálculo sugerido ou digite o valor final. Registre o custo e marque o pagamento quando for recebido. A visão da empresa agrupa os valores pelo mês da data agendada. O saldo compara os valores recebidos aos custos registrados naquele mês.
+
+## Atendimento público
+
+As chamadas do site público abrem diretamente o WhatsApp da Estetcar. Os endereços antigos de contato e agendamento também direcionam para a conversa. A equipe pode registrar os atendimentos recebidos no cadastro manual do painel.
