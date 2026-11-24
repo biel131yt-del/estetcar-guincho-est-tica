@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "estetcar-guincho",
+  "main": "./src/server.ts",
+  "compatibility_date": "2026-11-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist/client", "binding": "ASSETS" },
+  "d1_databases": [{ "binding": "DB", "database_name": "estetcar", "database_id": "00000000-0000-0000-0000-000000000001", "migrations_dir": "./drizzle" }]
+}

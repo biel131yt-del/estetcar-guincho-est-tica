@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { Phone } from "lucide-react";
 import { BUSINESS, whatsappLink } from "@/lib/business";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
 
@@ -26,7 +27,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-          <a href={`tel:+${BUSINESS.phoneRaw}`} className="btn-primary text-sm">📞 Ligar</a>
+          <a href={`tel:+${BUSINESS.phoneRaw}`} className="btn-primary text-sm"><Phone size={16} aria-hidden="true" /> Ligar</a>
         </div>
         <nav className="flex justify-around border-t border-border py-2 text-xs font-semibold md:hidden">
           {nav.map((n) => (
@@ -69,3 +70,4 @@ export function Layout({ children }: { children: ReactNode }) {
 export function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
   return <div className="reveal" style={{ animationDelay: `${delay}ms` }}>{children}</div>;
 }
+

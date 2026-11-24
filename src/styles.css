@@ -134,3 +134,14 @@
 @keyframes truck { from { transform: translateX(-20vw); } to { transform: translateX(110vw); } }
 @keyframes pulse { 70% { box-shadow: 0 0 0 18px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 @layer base { h1,h2,h3 { font-family: var(--font-display); } }
+
+.rescue-hero {
+  background: radial-gradient(ellipse at 88% 18%, oklch(0.36 0.08 79 / .42), transparent 58%), var(--background);
+}
+.rescue-card {
+  background: linear-gradient(152deg, oklch(0.28 0.036 82), var(--card) 54%);
+  box-shadow: 0 20px 65px oklch(0.08 0.01 260 / .5);
+}
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
+.fab-whatsapp { bottom: max(1rem, env(safe-area-inset-bottom)); }
+
