@@ -1,16 +1,11 @@
 import handler from "@tanstack/react-start/server-entry";
 import { handleBookingApi } from "./lib/booking-api";
-import { checkAdmin } from "./lib/admin-auth";
 import { renderErrorPage } from "./lib/error-page";
 
 export default {
   async fetch(request: Request) {
     const path = new URL(request.url).pathname;
     if (path.startsWith("/api/")) return handleBookingApi(request);
-    if (path === "/admin" || path === "/admin/") {
-      const denied = checkAdmin(request);
-      if (denied) return denied;
-    }
     try {
       const response = await handler.fetch(request);
       if (path === "/admin" || path === "/admin/") {

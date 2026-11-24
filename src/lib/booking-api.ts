@@ -3,7 +3,7 @@ import { SERVICES } from "./business.ts";
 import { z } from "zod";
 
 import { neon } from "@neondatabase/serverless";
-import { checkAdmin } from "./admin-auth.ts";
+import { adminAction, checkAdmin } from "./admin-auth.ts";
 
 function reply(body: unknown, status = 200) {
   return Response.json(body, { status, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
@@ -47,11 +47,9 @@ export async function handleBookingApi(request: Request) {
   const adminPath = url.pathname === "/api/admin/agendamentos";
   const bookingId = /^\/api\/admin\/agendamentos\/([0-9a-f-]{36})$/.exec(url.pathname)?.[1];
 
-  if (!publicForm && !adminPath && !bookingId) return reply({ error: "Rota indisponível." }, 404);
-  if (!publicForm) {
-    const denied = checkAdmin(request);
-    if (denied) return denied;
-  }
+  const authAction = ["/api/admin/entrar", "/api/admin/trocar-senha", "/api/admin/sair"].includes(url.pathname);
+
+  if (!publicForm && !adminPath && !bookingId && !authAction) return reply({ error: "Rota indisponível." }, 404);
   if (method !== "GET" && request.headers.get("Origin") !== url.origin) {
     return reply({ error: "Origem da solicitação inválida." }, 403);
   }
@@ -60,6 +58,11 @@ export async function handleBookingApi(request: Request) {
 
   try {
     const db = neon(connection);
+    if (authAction) return await adminAction(request, db, url.pathname, await readJson(request));
+    if (!publicForm) {
+      const denied = await checkAdmin(request, db);
+      if (denied) return denied;
+    }
     if (method === "POST" && (publicForm || adminPath)) {
       const input = bookingSchema.safeParse(await readJson(request));
       if (!input.success) return reply({ error: "Revise os dados do agendamento." }, 400);

@@ -25,7 +25,7 @@ function Admin() {
   const [revision, refresh] = useState(0);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [more, setMore] = useState(false);
-  const [state, setState] = useState<"loading" | "ready" | "denied" | "error">("loading");
+  const [state, setState] = useState<"loading" | "ready" | "denied" | "change" | "error">("loading");
   const [notice, setNotice] = useState("");
   const [manual, setManual] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -44,10 +44,22 @@ function Admin() {
         setState("ready");
       })
       .catch((error) => {
-        if (!controller.signal.aborted) setState(error.cause === 401 ? "denied" : "error");
+        if (!controller.signal.aborted) setState(error.cause === 401 ? "denied" : error.cause === 428 ? "change" : "error");
       });
     return () => controller.abort();
   }, [filter, page, revision]);
+
+  async function signOut() {
+    try {
+      await bookingRequest("/api/admin/sair", "POST", {});
+      setBookings([]);
+      setManual(false);
+      setNotice("");
+      setState("denied");
+    } catch {
+      setNotice("Não foi possível sair. Tente novamente.");
+    }
+  }
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,11 +91,8 @@ function Admin() {
           <h1 className="mt-3 text-3xl sm:text-5xl">Agenda de atendimentos</h1>
         </div>
       </header>
-      {state === "denied" && <section className="card-hover mt-8 max-w-lg">
-        <h2 className="text-xl">Área da equipe</h2>
-        <p className="my-4 text-muted-foreground">Abra o painel diretamente para informar as credenciais da Estetcar.</p>
-        <a href="/admin" className="btn-primary">Abrir painel</a>
-      </section>}
+      {(state === "denied" || state === "change") && <AdminAccess key={state} change={state === "change"} onSuccess={reload} />}
+      {state === "ready" && <button type="button" className="btn-outline mt-4" onClick={signOut}>Sair do painel</button>}
       {state === "loading" && <p role="status" className="mt-6">Carregando agenda…</p>}
       {state === "error" && <div className="mt-6"><p role="alert">A agenda está indisponível.</p><button className="btn-outline mt-3" onClick={reload}>Tentar novamente</button></div>}
       {(state === "ready" || state === "loading") && <section className="mt-6">
@@ -118,6 +127,45 @@ function Admin() {
       </section>}
     </main>
   );
+}
+
+function AdminAccess({ change, onSuccess }: { change: boolean; onSuccess: () => void }) {
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const form = new FormData(event.currentTarget);
+    const password = form.get("password");
+    if (change && password !== form.get("confirmation")) {
+      setError("As senhas precisam ser iguais.");
+      return;
+    }
+    setError("");
+    setBusy(true);
+    try {
+      await bookingRequest(change ? "/api/admin/trocar-senha" : "/api/admin/entrar", "POST", { password });
+      onSuccess();
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : "Falha no acesso.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <form className="card-hover mt-8 max-w-lg" onSubmit={submit}>
+    <h2 className="text-xl">{change ? "Defina sua nova senha" : "Entrar no painel"}</h2>
+    {change && <p className="mt-2 text-muted-foreground">Escolha uma senha com pelo menos 16 caracteres para liberar a agenda.</p>}
+    <fieldset className="mt-4 grid gap-4" disabled={busy}>
+      <label className="grid gap-1 text-sm">{change ? "Nova senha" : "Senha"}
+        <input className="field" type="password" name="password" autoComplete={change ? "new-password" : "current-password"} required minLength={change ? 16 : undefined} maxLength={128} />
+      </label>
+      {change && <label className="grid gap-1 text-sm">Confirme a nova senha
+        <input className="field" type="password" name="confirmation" autoComplete="new-password" required minLength={16} maxLength={128} />
+      </label>}
+      <button className="btn-primary" type="submit">{busy ? "Aguarde…" : change ? "Salvar senha" : "Entrar"}</button>
+    </fieldset>
+    {error && <p role="alert" className="mt-4 text-destructive">{error}</p>}
+  </form>;
 }
 
 function BookingCard({ booking, onSaved, reload }: { booking: Booking; onSaved: () => void; reload: () => void }) {

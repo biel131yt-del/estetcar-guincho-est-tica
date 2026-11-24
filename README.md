@@ -2,10 +2,14 @@
 
 Site institucional e agenda de transportes na Região Carbonífera.
 
-## Vercel
+## Vercel e Neon
 
-- O servidor usa TanStack Start com Nitro. Instale com `npm install` e compile com `npm run build`.
-- Aplique `db/001-bookings.sql` ao PostgreSQL e configure `DATABASE_URL` como variável sensível em produção.
-- Configure a variável sensível `ADMIN_PASSWORD` com uma senha aleatória de pelo menos 24 caracteres. Faça uma nova implantação para aplicar a alteração.
-- A equipe abre `/admin` diretamente e entra com usuário `admin`. O servidor exige a mesma credencial nas rotas administrativas da API. O painel fica indisponível até a senha ser configurada.
-- O formulário público registra o pedido e oferece uma conversa pré-preenchida pelo WhatsApp.
+1. Aplique os arquivos SQL de `db/` em ordem no PostgreSQL.
+2. Na Vercel, configure `DATABASE_URL` e um `ADMIN_SESSION_SECRET` aleatório de pelo menos 32 caracteres como variáveis sensíveis.
+3. Para testar sem transferência, configure `ADMIN_TEST_PASSWORD` e `ADMIN_TEST_UNTIL` (data ISO 8601), implante e entre em `/admin`.
+
+## Entregar ao comprador
+
+Quando a venda for confirmada, defina `ADMIN_MODE=handoff` e configure `ADMIN_HANDOFF_PASSWORD` como uma senha temporária inédita de pelo menos 16 caracteres, diferente da senha de teste. Implante a versão de produção e entregue essa credencial por um canal privado ao comprador.
+
+O primeiro login no modo de entrega exige uma nova senha antes de liberar a agenda. Ao concluir a troca, a senha inicial de entrega e as sessões anteriores perdem a validade. A senha definitiva fica armazenada no Neon em formato de hash.
