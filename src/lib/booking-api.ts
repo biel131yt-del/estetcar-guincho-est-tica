@@ -2,25 +2,11 @@ import { bookingSchema, statuses } from "./bookings.ts";
 import { SERVICES } from "./business.ts";
 import { z } from "zod";
 
-type Statement = {
-  bind(...values: (string | number)[]): Statement;
-  run(): Promise<{ meta: { changes: number } }>;
-  all(): Promise<{ results: unknown[] }>;
-};
-
-export type BookingEnv = {
-  DB?: { prepare(query: string): Statement };
-  ADMIN_EMAIL?: string;
-};
+import { neon } from "@neondatabase/serverless";
+import { checkAdmin } from "./admin-auth.ts";
 
 function reply(body: unknown, status = 200) {
   return Response.json(body, { status, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
-}
-
-function canManage(request: Request, env: BookingEnv) {
-  const email = request.headers.get("oai-authenticated-user-email")?.trim().toLowerCase();
-  const ownerEmail = env.ADMIN_EMAIL?.trim().toLowerCase();
-  return Boolean(ownerEmail && request.headers.get("oai-authenticated-user-id") && email === ownerEmail);
 }
 
 async function readJson(request: Request) {
@@ -54,7 +40,7 @@ const updateSchema = z.object({
   updated_at: z.iso.datetime(),
 });
 
-export async function handleBookingApi(request: Request, env: BookingEnv) {
+export async function handleBookingApi(request: Request) {
   const url = new URL(request.url);
   const method = request.method;
   const publicForm = url.pathname === "/api/agendamentos" && method === "POST";
@@ -62,14 +48,18 @@ export async function handleBookingApi(request: Request, env: BookingEnv) {
   const bookingId = /^\/api\/admin\/agendamentos\/([0-9a-f-]{36})$/.exec(url.pathname)?.[1];
 
   if (!publicForm && !adminPath && !bookingId) return reply({ error: "Rota indisponível." }, 404);
-  if (!publicForm && !canManage(request, env)) return reply({ error: "Acesso reservado à equipe Estetcar." }, 403);
+  if (!publicForm) {
+    const denied = checkAdmin(request);
+    if (denied) return denied;
+  }
   if (method !== "GET" && request.headers.get("Origin") !== url.origin) {
     return reply({ error: "Origem da solicitação inválida." }, 403);
   }
-  if (!env.DB) return reply({ error: "Agenda temporariamente indisponível." }, 503);
-  const db = env.DB;
+  const connection = process.env.DATABASE_URL;
+  if (!connection) return reply({ error: "Agenda temporariamente indisponível." }, 503);
 
   try {
+    const db = neon(connection);
     if (method === "POST" && (publicForm || adminPath)) {
       const input = bookingSchema.safeParse(await readJson(request));
       if (!input.success) return reply({ error: "Revise os dados do agendamento." }, 400);
@@ -80,35 +70,35 @@ export async function handleBookingApi(request: Request, env: BookingEnv) {
       if (publicForm && booking.scheduled_date < new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Sao_Paulo" }).format()) {
         return reply({ error: "Selecione hoje ou uma data futura." }, 400);
       }
-      await db.prepare(`INSERT INTO bookings
+      await db.query(`INSERT INTO bookings
         (id, request_key, name, phone, service, vehicle, scheduled_date, scheduled_time,
-         origin, destination, notes, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(request_key) DO NOTHING`)
-        .bind(crypto.randomUUID(), booking.request_key, booking.name, booking.phone, booking.service,
-          booking.vehicle, booking.scheduled_date, booking.scheduled_time, booking.origin,
-          booking.destination, booking.notes, publicForm ? "site" : "manual").run();
+         origin, destination, notes, source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        ON CONFLICT(request_key) DO NOTHING`,
+        [crypto.randomUUID(), booking.request_key, booking.name, booking.phone, booking.service,
+         booking.vehicle, booking.scheduled_date, booking.scheduled_time, booking.origin,
+         booking.destination, booking.notes, publicForm ? "site" : "manual"]);
       return reply({ ok: true }, 201);
     }
 
     if (method === "GET" && adminPath) {
       const status = z.enum(statuses).safeParse(url.searchParams.get("status"));
       const page = Math.min(10000, Math.max(1, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1));
-      const list = await db.prepare(`SELECT id,name,phone,service,vehicle,scheduled_date,scheduled_time,
+      const list = await db.query(`SELECT id,name,phone,service,vehicle,scheduled_date,scheduled_time,
         origin,destination,notes,internal_notes,source,status,updated_at FROM bookings
-        ${status.success ? "WHERE status = ?" : ""}
-        ORDER BY scheduled_date DESC, scheduled_time DESC, id LIMIT 26 OFFSET ?`)
-        .bind(...(status.success ? [status.data] : []), (page - 1) * 25).all();
-      return reply({ bookings: list.results.slice(0, 25), more: list.results.length > 25 });
+        ${status.success ? "WHERE status = $1" : ""}
+        ORDER BY scheduled_date DESC, scheduled_time DESC, id LIMIT 26 OFFSET ${status.success ? "$2" : "$1"}`,
+        [...(status.success ? [status.data] : []), (page - 1) * 25]);
+      return reply({ bookings: list.slice(0, 25), more: list.length > 25 });
     }
 
     if (method === "PATCH" && bookingId) {
       const input = updateSchema.safeParse(await readJson(request));
       if (!input.success) return reply({ error: "Revise o status e as observações." }, 400);
       const { status, internal_notes, updated_at } = input.data;
-      const changed = await db.prepare(`UPDATE bookings SET status = ?, internal_notes = ?,
-        updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', max(julianday('now'), julianday(updated_at) + 0.001 / 86400))
-        WHERE id = ? AND updated_at = ?`).bind(status, internal_notes, bookingId, updated_at).run();
-      return changed.meta.changes
+      const version = new Date(Math.max(Date.now(), Date.parse(updated_at) + 1)).toISOString();
+      const changed = await db.query(`UPDATE bookings SET status = $1, internal_notes = $2, updated_at = $3
+        WHERE id = $4 AND updated_at = $5 RETURNING id`, [status, internal_notes, version, bookingId, updated_at]);
+      return changed.length
         ? reply({ ok: true })
         : reply({ error: "Esse pedido foi atualizado. Recarregue a agenda antes de editar." }, 409);
     }

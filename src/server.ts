@@ -1,15 +1,18 @@
 import handler from "@tanstack/react-start/server-entry";
-import { handleBookingApi, type BookingEnv } from "./lib/booking-api";
+import { handleBookingApi } from "./lib/booking-api";
+import { checkAdmin } from "./lib/admin-auth";
 import { renderErrorPage } from "./lib/error-page";
 
 export default {
-  async fetch(request: Request, env: BookingEnv, context: unknown) {
+  async fetch(request: Request) {
     const path = new URL(request.url).pathname;
-    if (path.startsWith("/api/")) return handleBookingApi(request, env);
+    if (path.startsWith("/api/")) return handleBookingApi(request);
+    if (path === "/admin" || path === "/admin/") {
+      const denied = checkAdmin(request);
+      if (denied) return denied;
+    }
     try {
-      // Forward the Worker arguments without exposing bindings to the browser.
-      const fetchPage = handler.fetch as (request: Request, env: BookingEnv, context: unknown) => Promise<Response>;
-      const response = await fetchPage(request, env, context);
+      const response = await handler.fetch(request);
       if (path === "/admin" || path === "/admin/") {
         const headers = new Headers(response.headers);
         headers.set("Cache-Control", "no-store");

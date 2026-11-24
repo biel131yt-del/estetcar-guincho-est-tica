@@ -44,7 +44,7 @@ function Admin() {
         setState("ready");
       })
       .catch((error) => {
-        if (!controller.signal.aborted) setState(error.cause === 403 ? "denied" : "error");
+        if (!controller.signal.aborted) setState(error.cause === 401 ? "denied" : "error");
       });
     return () => controller.abort();
   }, [filter, page, revision]);
@@ -78,12 +78,11 @@ function Admin() {
           <a href="/" className="font-display text-primary">ESTETCAR</a>
           <h1 className="mt-3 text-3xl sm:text-5xl">Agenda de atendimentos</h1>
         </div>
-        {state === "ready" && <a href="/signout-with-chatgpt?return_to=%2F" target="_top" className="btn-outline">Sair</a>}
       </header>
       {state === "denied" && <section className="card-hover mt-8 max-w-lg">
         <h2 className="text-xl">Área da equipe</h2>
-        <p className="my-4 text-muted-foreground">Entre com a conta ChatGPT autorizada para gerenciar os pedidos.</p>
-        <a href="/signin-with-chatgpt?return_to=%2Fadmin" target="_top" className="btn-primary">Entrar com ChatGPT</a>
+        <p className="my-4 text-muted-foreground">Abra o painel diretamente para informar as credenciais da Estetcar.</p>
+        <a href="/admin" className="btn-primary">Abrir painel</a>
       </section>}
       {state === "loading" && <p role="status" className="mt-6">Carregando agenda…</p>}
       {state === "error" && <div className="mt-6"><p role="alert">A agenda está indisponível.</p><button className="btn-outline mt-3" onClick={reload}>Tentar novamente</button></div>}
