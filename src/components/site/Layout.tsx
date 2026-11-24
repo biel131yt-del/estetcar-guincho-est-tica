@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { BUSINESS, whatsappLink } from "@/lib/business";
+import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
 
 const nav = [
   { to: "/", label: "Início" },
@@ -56,9 +57,10 @@ export function Layout({ children }: { children: ReactNode }) {
         target="_blank"
         rel="noreferrer"
         aria-label="Chamar no WhatsApp"
+        title="Chamar no WhatsApp"
         className="fab-whatsapp"
       >
-        💬
+        <WhatsAppIcon className="h-7 w-7" />
       </a>
     </div>
   );

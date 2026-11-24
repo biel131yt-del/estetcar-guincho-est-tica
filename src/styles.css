@@ -123,7 +123,7 @@
   .reveal { animation: reveal .8s cubic-bezier(.2,.7,.2,1) both; }
   .beacon { animation: beacon 1.4s ease-in-out infinite; }
   .truck { animation: truck 9s linear infinite; }
-  .fab-whatsapp { @apply fixed bottom-5 right-5 z-50 grid h-14 w-14 place-items-center rounded-full bg-success text-2xl; box-shadow: 0 0 0 0 color-mix(in oklab, var(--success) 60%, transparent); animation: pulse 2s infinite; }
+  .fab-whatsapp { @apply fixed z-50 grid h-14 w-14 place-items-center rounded-full bg-success text-card-foreground transition duration-300 hover:-translate-y-1 hover:bg-success/90; bottom: max(1.25rem, env(safe-area-inset-bottom)); right: max(1.25rem, env(safe-area-inset-right)); box-shadow: 0 0 0 0 color-mix(in oklab, var(--success) 60%, transparent), 0 10px 24px -8px rgb(0 0 0 / .6); animation: pulse 2s infinite; }
   .card-hover { @apply rounded-lg border border-border bg-card p-6 transition duration-300 hover:-translate-y-1 hover:border-primary; }
   .field { @apply w-full rounded-md border border-input bg-background px-3 py-2 outline-none focus:border-primary; }
 }
