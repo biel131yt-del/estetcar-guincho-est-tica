@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { BusinessOverview, CompanyForm, FreightFields } from "@/components/site/AdminBusiness";
+import { brl, decimalUnits, localMonth, type CompanySettings, type Freight } from "@/lib/freight";
 import { BookingFields } from "@/components/site/BookingFields";
 import { bookingFromForm, bookingSchema, statuses, statusLabels, type BookingInput } from "@/lib/bookings";
 import { bookingRequest } from "@/lib/booking-client";
 
 type Status = (typeof statuses)[number];
-type Booking = Omit<BookingInput, "request_key"> & {
+type Booking = Omit<BookingInput, "request_key"> & Freight & {
   id: string;
   source: "site" | "manual";
   status: Status;
@@ -20,6 +22,9 @@ export const Route = createFileRoute("/admin")({
 });
 
 function Admin() {
+  const [company, setCompany] = useState<CompanySettings | null>(null);
+  const [companyError, setCompanyError] = useState(false);
+  const [month, setMonth] = useState(localMonth);
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(1);
   const [revision, refresh] = useState(0);
@@ -49,10 +54,22 @@ function Admin() {
     return () => controller.abort();
   }, [filter, page, revision]);
 
+  const authenticated = state === "ready";
+  useEffect(() => {
+    if (!authenticated || company) return;
+    const controller = new AbortController();
+    setCompanyError(false);
+    bookingRequest<CompanySettings>("/api/admin/empresa", "GET", undefined, controller.signal)
+      .then((data) => { if (!controller.signal.aborted) setCompany(data); })
+      .catch(() => { if (!controller.signal.aborted) setCompanyError(true); });
+    return () => controller.abort();
+  }, [authenticated, company]);
+
   async function signOut() {
     try {
       await bookingRequest("/api/admin/sair", "POST", {});
       setBookings([]);
+      setCompany(null);
       setManual(false);
       setNotice("");
       setState("denied");
@@ -87,12 +104,17 @@ function Admin() {
     <main className="mx-auto min-h-screen max-w-6xl px-4 py-10 sm:py-16">
       <header className="flex flex-wrap items-start justify-between gap-5 border-b border-border pb-7">
         <div>
-          <a href="/" className="font-display text-primary">ESTETCAR</a>
+          <a href="/" className="font-display text-primary">{state === "ready" && company ? company.name : "ESTETCAR"}</a>
           <h1 className="mt-3 text-3xl sm:text-5xl">Agenda de atendimentos</h1>
         </div>
       </header>
       {(state === "denied" || state === "change") && <AdminAccess key={state} change={state === "change"} onSuccess={reload} />}
       {state === "ready" && <button type="button" className="btn-outline mt-4" onClick={signOut}>Sair do painel</button>}
+      {state === "ready" && <>
+        <BusinessOverview revision={revision} month={month} setMonth={setMonth} />
+        {company && <CompanyForm settings={company} onSaved={setCompany} />}
+        {companyError && <p role="alert" className="mt-3 text-destructive">Configurações da empresa indisponíveis. Atualize a página para tentar novamente.</p>}
+      </>}
       {state === "loading" && <p role="status" className="mt-6">Carregando agenda…</p>}
       {state === "error" && <div className="mt-6"><p role="alert">A agenda está indisponível.</p><button className="btn-outline mt-3" onClick={reload}>Tentar novamente</button></div>}
       {(state === "ready" || state === "loading") && <section className="mt-6">
@@ -116,7 +138,7 @@ function Admin() {
         {state === "ready" && <>
           <div className="mt-6 grid gap-4">
             {bookings.length === 0 && <p className="card-hover text-muted-foreground">Nenhum pedido nesta página.</p>}
-            {bookings.map((booking) => <BookingCard key={`${booking.id}:${booking.updated_at}`} booking={booking} onSaved={() => { setNotice("Pedido atualizado."); reload(); }} reload={reload} />)}
+            {bookings.map((booking) => <BookingCard key={`${booking.id}:${booking.updated_at}`} booking={booking} company={company} onSaved={() => { setNotice("Pedido atualizado."); reload(); }} reload={reload} />)}
           </div>
           <nav aria-label="Páginas de pedidos" className="mt-6 flex flex-wrap items-center gap-4">
             <button className="btn-outline disabled:opacity-40" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
@@ -168,7 +190,7 @@ function AdminAccess({ change, onSuccess }: { change: boolean; onSuccess: () => 
   </form>;
 }
 
-function BookingCard({ booking, onSaved, reload }: { booking: Booking; onSaved: () => void; reload: () => void }) {
+function BookingCard({ booking, company, onSaved, reload }: { booking: Booking; company: CompanySettings | null; onSaved: () => void; reload: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [stale, setStale] = useState(false);
@@ -183,6 +205,13 @@ function BookingCard({ booking, onSaved, reload }: { booking: Booking; onSaved: 
         status: data.get("status"),
         internal_notes: data.get("internal_notes"),
         updated_at: booking.updated_at,
+        freight: {
+          distance_meters: decimalUnits(data.get("distance_km"), 3),
+          extras_cents: decimalUnits(data.get("extras"), 2) ?? 0,
+          freight_cents: decimalUnits(data.get("freight_price"), 2),
+          cost_cents: decimalUnits(data.get("cost"), 2) ?? 0,
+          payment_received: data.has("received"),
+        },
       });
       onSaved();
     } catch (problem) {
@@ -196,7 +225,7 @@ function BookingCard({ booking, onSaved, reload }: { booking: Booking; onSaved: 
   return <details className="card-hover">
     <summary className="cursor-pointer">
       <span className="font-semibold">{booking.name} · {booking.service}</span>
-      <span className="mt-1 block text-sm text-muted-foreground">{booking.scheduled_date.split("-").reverse().join("/")} às {booking.scheduled_time} · {statusLabels[booking.status]} · {booking.source === "site" ? "Site" : "Manual"}</span>
+      <span className="mt-1 block text-sm text-muted-foreground">{booking.scheduled_date.split("-").reverse().join("/")} às {booking.scheduled_time} · {statusLabels[booking.status]} · {booking.source === "site" ? "Site" : "Manual"} · {booking.freight_cents === null ? "Sem orçamento" : `${brl(booking.freight_cents)} · ${booking.payment_received ? "Recebido" : "A receber"}`}</span>
     </summary>
     <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
       <div><dt className="text-muted-foreground">Telefone</dt><dd><a className="text-primary underline" href={`tel:${booking.phone.length <= 11 ? "+55" : "+"}${booking.phone}`}>{booking.phone}</a></dd></div>
@@ -210,6 +239,7 @@ function BookingCard({ booking, onSaved, reload }: { booking: Booking; onSaved: 
         <label className="grid gap-1 text-sm">Status
           <select name="status" className="field" defaultValue={booking.status}>{statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}</select>
         </label>
+        <FreightFields freight={booking} company={company} />
         <label className="grid gap-1 text-sm">Observações internas
           <textarea name="internal_notes" className="field" rows={3} maxLength={2000} defaultValue={booking.internal_notes} />
         </label>
@@ -220,3 +250,4 @@ function BookingCard({ booking, onSaved, reload }: { booking: Booking; onSaved: 
     </form>
   </details>;
 }
+
