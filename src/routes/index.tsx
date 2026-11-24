@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowUpRight, MapPin, Truck } from "lucide-react";
+import { ArrowUpRight, MapPin } from "lucide-react";
 import { Layout, Reveal } from "@/components/site/Layout";
 import { WhatsAppAction } from "@/components/site/WhatsAppAction";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
@@ -14,39 +14,34 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <Layout>
-      <section className="rescue-hero overflow-hidden">
-        <div className="hazard-bar" />
-        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 md:grid-cols-[1.2fr_1fr] md:gap-14 md:py-24">
-          <Reveal>
-            <p className="mb-6 flex items-center gap-2 text-sm font-bold uppercase tracking-[.16em] text-primary"><span aria-hidden="true">●</span> Plantão 24 horas</p>
-            <h1 className="max-w-[13ch] text-[clamp(2.9rem,6.7vw,6rem)] leading-[.95] tracking-tight">
-              Precisa de guincho? <span className="text-primary">A gente busca você.</span>
-            </h1>
-            <p className="mt-6 max-w-md text-lg text-muted-foreground">Guincho e socorro automotivo em São Jerônimo, Charqueadas e Região Carbonífera.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <WhatsAppAction className="btn-whatsapp"><WhatsAppIcon className="h-5 w-5" /> Chamar guincho agora</WhatsAppAction>
-            </div>
-          </Reveal>
-          <div className="rescue-card rounded-2xl border border-border p-6 sm:p-8">
-            <div className="flex items-center justify-between border-b border-border pb-5">
-              <Truck size={38} className="text-primary" aria-hidden="true" />
-              <span className="font-display text-primary">ESTETCAR</span>
-            </div>
-            <div className="grid gap-5 pt-6">
-              <div className="flex gap-4">
-                <MapPin className="mt-1 shrink-0 text-primary" size={21} aria-hidden="true" />
-                <div><h2 className="text-lg">Atendimento regional</h2><p className="mt-1 text-muted-foreground">{BUSINESS.region}</p></div>
-              </div>
-              <WhatsAppAction className="flex items-center gap-4 rounded-lg border border-border bg-background/60 p-4 font-semibold transition-colors hover:border-primary">
-                <WhatsAppIcon className="h-5 w-5 shrink-0 text-primary" />
-                <span>Enviar localização pelo WhatsApp</span><ArrowUpRight className="ml-auto shrink-0" size={18} aria-hidden="true" />
-              </WhatsAppAction>
-            </div>
+      <section className="rescue-hero" aria-labelledby="rescue-title">
+        <picture className="rescue-hero-scene">
+          <source media="(min-width: 960px)" srcSet="/images/estetcar-guincho-hero.webp" />
+          <img
+            src="/images/estetcar-guincho-hero-mobile.webp"
+            alt="Guincho amarelo da Estetcar com a logo na porta e no capô, transportando um carro"
+            width={825}
+            height={557}
+            fetchPriority="high"
+            decoding="async"
+          />
+        </picture>
+        <div className="rescue-hero-inner">
+          <div className="rescue-hero-copy">
+            <p className="rescue-hero-status"><span aria-hidden="true" /> Plantão 24 horas</p>
+            <h1 id="rescue-title">Precisa de guincho <em>agora?</em></h1>
+            <p className="rescue-hero-description">Socorro automotivo em São Jerônimo, Charqueadas e Região Carbonífera.</p>
+            <WhatsAppAction className="btn-whatsapp rescue-hero-action">
+              <WhatsAppIcon className="h-6 w-6 shrink-0" />
+              <span>Chamar guincho agora</span>
+              <ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" />
+            </WhatsAppAction>
+            <p className="rescue-hero-location"><MapPin size={16} aria-hidden="true" /> Envie sua localização na conversa.</p>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-20">
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
         <h2 className="text-3xl sm:text-4xl">Serviços de <span className="text-primary">socorro</span></h2>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((s, i) => (
@@ -84,4 +79,3 @@ function Index() {
     </Layout>
   );
 }
-
