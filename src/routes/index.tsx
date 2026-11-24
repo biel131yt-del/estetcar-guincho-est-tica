@@ -42,7 +42,7 @@ function Index() {
             </div>
           </Reveal>
         </div>
-        <div className="pointer-events-none absolute bottom-3 left-0 text-5xl truck" aria-hidden>🚛</div>
+        <div className="pointer-events-none absolute bottom-3 left-0 text-5xl truck" aria-hidden><span className="inline-block -scale-x-100">🚛</span></div>
         <div className="road" />
       </section>
 
