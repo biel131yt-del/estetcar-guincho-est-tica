@@ -29,4 +29,6 @@ use the editor.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
 
-- Business contact data (phone, region, map) lives only in `src/lib/business.ts`; bookings are sent via prefilled WhatsApp links (no backend) to keep the site simple.
+- Business contact data stays centralized in `src/lib/business.ts`; booking submission persists to Cloud before offering the prefilled WhatsApp conversation so both channels stay available.
+- Booking validation and form fields are shared between public and manual entry to keep records consistent.
+- Booking reads and management use authenticated server functions and database admin-role policies; public submission never returns customer records or grants anonymous table access.
