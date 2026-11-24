@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Business contact data (phone, region, map) lives only in `src/lib/business.ts`; bookings are sent via prefilled WhatsApp links (no backend) to keep the site simple.

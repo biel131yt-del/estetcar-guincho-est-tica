@@ -81,20 +81,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { title: "Guincho 24 Horas Estetcar" },
+      { name: "description", content: "Guincho e socorro automotivo 24h na Região Carbonífera – RS." },
+      { name: "theme-color", content: "#1a1c22" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:wght@400;600;700&display=swap" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -106,9 +103,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "AutoTowing",
+              name: "Guincho 24 Horas Estetcar",
+              telephone: "+5551998026941",
+              openingHours: "Mo-Su 00:00-23:59",
+              areaServed: ["São Jerônimo", "Charqueadas", "Triunfo", "Arroio dos Ratos", "Rio Grande do Sul"],
+              geo: { "@type": "GeoCoordinates", latitude: -29.9610881, longitude: -51.6874006 },
+              hasMap: "https://www.google.com/maps/place/Guincho+24+horas+estetcar/@-29.9610881,-51.6874006,17z",
+            }),
+          }}
+        />
       </head>
       <body>
         {children}
