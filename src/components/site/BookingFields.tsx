@@ -2,8 +2,8 @@ import { SERVICES } from '@/lib/business';
 
 export function BookingFields() {
   return <>
-    <label className="grid gap-1 text-sm">Nome<input required name="name" minLength={2} maxLength={80} className="field" /></label>
-    <label className="grid gap-1 text-sm">Telefone / WhatsApp<input required type="tel" name="phone" minLength={10} maxLength={20} className="field" /></label>
+    <label className="grid gap-1 text-sm">Nome<input required name="name" autoComplete="name" minLength={2} maxLength={80} className="field" /></label>
+    <label className="grid gap-1 text-sm">Telefone / WhatsApp<input required type="tel" name="phone" autoComplete="tel" minLength={10} maxLength={20} className="field" /></label>
     <label className="grid gap-1 text-sm">Serviço<select name="service" className="field">{SERVICES.map(s => <option key={s.title}>{s.title}</option>)}</select></label>
     <label className="grid gap-1 text-sm">Veículo (modelo e ano)<input required name="vehicle" maxLength={80} className="field" /></label>
     <label className="grid gap-1 text-sm">Data<input required type="date" name="scheduled_date" className="field" /></label>

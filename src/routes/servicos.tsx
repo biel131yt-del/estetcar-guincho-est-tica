@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Reveal } from "@/components/site/Layout";
-import { SERVICES, whatsappLink } from "@/lib/business";
+import { SERVICES } from "@/lib/business";
+import { WhatsAppAction } from "@/components/site/WhatsAppAction";
 import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/servicos")({
@@ -23,7 +24,7 @@ function Servicos() {
                 <div>
                   <h2 className="text-xl">{s.title}</h2>
                   <p className="mt-2 text-muted-foreground">{s.text}</p>
-                  <a href={whatsappLink(`Olá! Quero um orçamento de: ${s.title}.`)} target="_blank" rel="noreferrer" className="mt-4 inline-block font-semibold text-primary">Pedir orçamento →</a>
+                  <WhatsAppAction message={`Olá, Estetcar! Preciso de ajuda com ${s.title.toLowerCase()}. Vou enviar minha localização.`} className="mt-4 inline-block font-semibold text-primary">Pedir atendimento →</WhatsAppAction>
                 </div>
               </article>
             </Reveal>
@@ -33,3 +34,4 @@ function Servicos() {
     </Layout>
   );
 }
+

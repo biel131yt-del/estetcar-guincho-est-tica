@@ -1,26 +1,23 @@
 # Estetcar Guincho & Estética
 
-https://www.google.com/maps/place/Guincho+24+horas+estetcar/@-29.9610834,-51.6899809,17z/data=!4m14!1m7!3m6!1s0x95181135adbd708b:0x918b59b76d5a82a8!2sGuincho+24+horas+estetcar!8m2!3d-29.9610881!4d-51.6874006!16s%2Fg%2F11j1cybd5z!3m5!1s0x95181135adbd708b:0x918b59b76d5a82a8!8m2!3d-29.9610881!4d-51.6874006!16s%2Fg%2F11j1cybd5z?entry=ttu&g_ep=EgoyMDI2MTExOC4xIKXMDSoASAFQAw%3D%3D
+Site institucional e agenda de transportes na Região Carbonífera.
 
-Criar um site para esta empresa, principal finalidade é a divulgação, agendamentos e atrair clientes, tecnicas de ceo e etc animações, site dinamico
+## Vercel e Neon
 
-This project was built with [Lovable](https://lovable.dev).
+1. Aplique os arquivos SQL de `db/` em ordem no PostgreSQL.
+2. Na Vercel, configure `DATABASE_URL` e um `ADMIN_SESSION_SECRET` aleatório de pelo menos 32 caracteres como variáveis sensíveis.
+3. Para testar sem transferência, configure `ADMIN_TEST_PASSWORD` e `ADMIN_TEST_UNTIL` (data ISO 8601), implante e entre em `/admin`.
 
-## Build with Lovable
+## Entregar ao comprador
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/92e20095-e653-4e57-a80d-09238fbd6cd1).
+Quando a venda for confirmada, defina `ADMIN_MODE=handoff` e configure `ADMIN_HANDOFF_PASSWORD` como uma senha temporária inédita de pelo menos 16 caracteres, diferente da senha de teste. Implante a versão de produção e entregue essa credencial por um canal privado ao comprador.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+O primeiro login no modo de entrega exige uma nova senha antes de liberar a agenda. Ao concluir a troca, a senha inicial de entrega e as sessões anteriores perdem a validade. A senha definitiva fica armazenada no Neon em formato de hash.
 
-## Development
+## Gestão e frete
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Em `/admin`, abra **Empresa e tabela de frete** para cadastrar taxa de saída, tarifa por km e frete mínimo. No pedido, informe a distância cobrada e os adicionais e aplique o cálculo sugerido ou digite o valor final. Registre o custo e marque o pagamento quando for recebido. A visão da empresa agrupa os valores pelo mês da data agendada. O saldo compara os valores recebidos aos custos registrados naquele mês.
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+## Atendimento público
+
+As chamadas do site público abrem diretamente o WhatsApp da Estetcar. Os endereços antigos de contato e agendamento também direcionam para a conversa. A equipe pode registrar os atendimentos recebidos no cadastro manual do painel.
